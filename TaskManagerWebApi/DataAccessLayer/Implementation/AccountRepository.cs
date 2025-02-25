@@ -1,4 +1,5 @@
-﻿using TaskManagerWebApi.DataAccessLayer.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskManagerWebApi.DataAccessLayer.Interfaces;
 using TaskManagerWebApi.Models;
 
 namespace TaskManagerWebApi.DataAccessLayer.Implementation
@@ -11,29 +12,41 @@ namespace TaskManagerWebApi.DataAccessLayer.Implementation
             this.context = context;
         }
 
-        public Task<Users> CreateAccount(Users users)
+        public async Task<Users> CreateAccount(Users user)
         {
-            throw new NotImplementedException();
+            await context.Users.AddAsync(user);
+            await context.SaveChangesAsync();
+            return user;
         }
 
-        public Task<Users> DeleteAccount(Users users)
+        public async Task<Users> DeleteAccount(Users user)
         {
-            throw new NotImplementedException();
+            context.Users.Remove(user);
+            await context.SaveChangesAsync();
+            return user;
         }
 
-        public Task<List<Users>> GetAllUsers(Users users)
+        public async Task<List<Users>> GetAllUsers(Users users)
         {
-            throw new NotImplementedException();
+            return await context.Users.OrderBy(c => c.UserId).ToListAsync();
         }
 
-        public Task<Users> UpdateAccount(Users users)
+        public async Task<Users> GetUser(int userId)
         {
-            throw new NotImplementedException();
+            return await context.Users.FindAsync(userId);
         }
 
-        public Task<bool> VerifyAccount(Users users)
+        public async Task<Users> UpdateAccount(Users user)
         {
-            throw new NotImplementedException();
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
+            return user;
+
+        }
+
+        public bool VerifyAccount(Users users)
+        {
+            return context.Users.Any(x => x.Username == users.Username && x.Password == users.Password);
         }
     }
 }

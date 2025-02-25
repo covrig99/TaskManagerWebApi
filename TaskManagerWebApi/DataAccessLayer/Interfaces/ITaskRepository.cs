@@ -10,7 +10,7 @@ namespace TaskManagerWebApi.DataAccessLayer.Interfaces
         Task<Tasks> GetTask(int taskId);
         Task<Tasks> CreateTask(Tasks task);
         Task<Tasks> UpdateTask(Tasks task);
-        Task<Tasks> DeleteTask(int taskId);
+        Task<Tasks> DeleteTask(Tasks task);
 
 
     }

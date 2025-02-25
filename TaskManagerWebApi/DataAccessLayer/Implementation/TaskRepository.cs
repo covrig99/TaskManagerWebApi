@@ -1,4 +1,5 @@
-﻿using TaskManagerWebApi.DataAccessLayer.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskManagerWebApi.DataAccessLayer.Interfaces;
 using TaskManagerWebApi.Models;
 
 namespace TaskManagerWebApi.DataAccessLayer.Implementation
@@ -12,39 +13,49 @@ namespace TaskManagerWebApi.DataAccessLayer.Implementation
             this.context = context;
         }
 
-        public Task<Tasks> CreateTask(Tasks task)
+        public async Task<Tasks> CreateTask(Tasks task)
         {
-            throw new NotImplementedException();
+            await context.Tasks.AddAsync(task);
+            await context.SaveChangesAsync();
+            return task;
         }
 
-        public Task<Tasks> DeleteTask(int taskId)
+        public async Task<Tasks> DeleteTask(Tasks task)
         {
-            throw new NotImplementedException();
+            context.Tasks.Remove(task);
+            await context.SaveChangesAsync();
+            return task;
         }
 
-        public Task<List<Tasks>> GetAllTasks()
+        public async Task<List<Tasks>> GetAllTasks()
         {
-            throw new NotImplementedException();
+            return await context.Tasks.OrderBy(c => c.UserId).ToListAsync();
         }
 
-        public Task<List<Tasks>> GetAllTasks(int userId)
+        public async Task<List<Tasks>> GetAllTasks(int userId)
         {
-            throw new NotImplementedException();
+            return await context.Tasks.Where(s => s.UserId == userId).ToListAsync();
         }
 
-        public Task<List<Tasks>> GetAllTasks(string username)
+        public async Task<List<Tasks>> GetAllTasks(string username)
         {
-            throw new NotImplementedException();
+            var _user = context.Users.ToList().SingleOrDefault(s => s.Username == username);
+            if (_user == null)
+                return await context.Tasks.ToListAsync();
+                
+            return await context.Tasks.Where(x => x.UserId == _user.UserId).ToListAsync();
         }
 
-        public Task<Tasks> GetTask(int taskId)
+        public async Task<Tasks> GetTask(int taskId)
         {
-            throw new NotImplementedException();
+            return await context.Tasks.FindAsync(taskId);
         }
 
-        public Task<Tasks> UpdateTask(Tasks task)
+        public async Task<Tasks> UpdateTask(Tasks task)
         {
-            throw new NotImplementedException();
+            context.Tasks.Update(task);
+            await context.SaveChangesAsync();
+            return task;
         }
     }
 }
