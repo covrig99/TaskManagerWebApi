@@ -2,5 +2,6 @@
 {
     public interface ITaskService
     {
+        public Task<Results<>>
     }
 }
