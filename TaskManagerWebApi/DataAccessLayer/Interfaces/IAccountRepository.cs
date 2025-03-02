@@ -4,12 +4,12 @@ namespace TaskManagerWebApi.DataAccessLayer.Interfaces
 {
     public interface IAccountRepository
     {
-        Task<Users> CreateAccount(Users users);
-        bool VerifyAccount(Users users);
-        Task<Users> UpdateAccount(Users users);
-        Task<Users> DeleteAccount(Users users);
-        Task<List<Users>> GetAllUsers(Users users);
-        Task<Users> GetUser(int userId);
+        Task<User> CreateAccount(User users);
+        
+        Task<User> UpdateAccount(User users);
+        Task<User> DeleteAccount(User users);
+        Task<List<User>> GetAllUsers(User users);
+        Task<User> GetUser(int userId);
         
         
     }

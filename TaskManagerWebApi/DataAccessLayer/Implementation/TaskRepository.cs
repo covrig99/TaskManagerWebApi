@@ -7,51 +7,43 @@ namespace TaskManagerWebApi.DataAccessLayer.Implementation
     public class TaskRepository : ITaskRepository
 
     {
-        private readonly DataContext context;
-        public TaskRepository(DataContext context)
+        private readonly TaskManageDbContext context;
+        public TaskRepository(TaskManageDbContext context)
         {
             this.context = context;
         }
 
-        public async Task<Tasks> CreateTask(Tasks task)
+        public async Task<UserTask> CreateTask(UserTask task)
         {
             await context.Tasks.AddAsync(task);
             await context.SaveChangesAsync();
             return task;
         }
 
-        public async Task<Tasks> DeleteTask(Tasks task)
+        public async Task<UserTask> DeleteTask(UserTask task)
         {
             context.Tasks.Remove(task);
             await context.SaveChangesAsync();
             return task;
         }
 
-        public async Task<List<Tasks>> GetAllTasks()
+        public async Task<List<UserTask>> GetAllTasks()
         {
-            return await context.Tasks.OrderBy(c => c.UserId).ToListAsync();
+            return await context.Tasks.OrderBy(c => c.IdUser).ToListAsync();
         }
 
-        public async Task<List<Tasks>> GetAllTasks(int userId)
+        public async Task<List<UserTask>> GetAllTasks(int userId)
         {
-            return await context.Tasks.Where(s => s.UserId == userId).ToListAsync();
+            return await context.Tasks.Where(s => s.IdUser == userId).ToListAsync();
         }
 
-        public async Task<List<Tasks>> GetAllTasks(string username)
-        {
-            var _user = context.Users.ToList().SingleOrDefault(s => s.Username == username);
-            if (_user == null)
-                return await context.Tasks.ToListAsync();
-                
-            return await context.Tasks.Where(x => x.UserId == _user.UserId).ToListAsync();
-        }
 
-        public async Task<Tasks> GetTask(int taskId)
+        public async Task<UserTask> GetTask(int taskId)
         {
             return await context.Tasks.FindAsync(taskId);
         }
 
-        public async Task<Tasks> UpdateTask(Tasks task)
+        public async Task<UserTask> UpdateTask(UserTask task)
         {
             context.Tasks.Update(task);
             await context.SaveChangesAsync();
