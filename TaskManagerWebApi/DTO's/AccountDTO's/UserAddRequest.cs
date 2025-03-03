@@ -1,8 +1,13 @@
-﻿namespace TaskManagerWebApi.DTO_s.AccountDTO_s
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+
+namespace TaskManagerWebApi.DTO_s.AccountDTO_s
 {
     public class UserAddRequest
     {
-        public UserLoginInfoRequest UserLoginInfo { get; set; }
-        public int Type { get; set; }
+        public string Email { get; set; }
+        [Required]
+        public string Password { get; set; }
+        public string Role { get; set; }
     }
 }

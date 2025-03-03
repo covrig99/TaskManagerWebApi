@@ -37,8 +37,19 @@ namespace TaskManagerWebApi.Service.Implementation
 
         public async Task<Result<UserTask>> CreateTask(UserTask addedTask, User userLoginInfo)
         {
+            var userExists = await _accountRepository.GetUser(addedTask.IdUser);
+            if (userExists == null)
+            {
+                return Result.Fail("User not found. Cannot assign task.");
+            }
+
+            addedTask.User = userExists; 
+            addedTask.IdUser = userExists.Id; 
+            addedTask.CreatedDate = DateTime.UtcNow; 
+            addedTask.UpdatedDate = DateTime.UtcNow;
+
             await _taskRepository.CreateTask(addedTask);
-            return addedTask;
+            return Result.Ok(addedTask);
         }
 
         public async Task<Result<UserTask>> DeleteTask(int task)
@@ -51,6 +62,11 @@ namespace TaskManagerWebApi.Service.Implementation
         public async Task<List<UserTask>> GetAllTasks()
         {
             var tasks = await _taskRepository.GetAllTasks();
+            foreach (var task in tasks)
+            {
+                task.RejectionReason ??= "N/A";
+                task.User ??= new User { Id = 0, Email = "Unassigned", UserName = "No User" };
+            }
             return tasks;
         }
 
@@ -65,7 +81,18 @@ namespace TaskManagerWebApi.Service.Implementation
             taskfound.Description = updateTask.Description;
             taskfound.Status = updateTask.Status;
             taskfound.RejectionReason = updateTask.RejectionReason;
-            
+
+            if (updateTask.IdUser > 0) 
+            {
+                var user = await _accountRepository.GetUser(updateTask.IdUser);
+                if (user == null)
+                {
+                    return Result.Fail(ApiErrors.UserNotFound);
+                }
+                taskfound.IdUser = updateTask.IdUser; // Assign the correct UserId
+                taskfound.User = user; // Ensure navigation property is populated
+            }
+
             await _taskRepository.UpdateTask(taskfound);
             return Result.Ok(taskfound);
         }

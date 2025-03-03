@@ -12,7 +12,7 @@ namespace TaskManagerWebApi.Models
         public string Title { get; set; }
         public string Description { get; set; }
         [Required]
-        public TaskStatus Status { get; set; } = TaskStatus.ToDo;
+        public TaskStatuses Status { get; set; } = TaskStatuses.ToDo;
         public string? RejectionReason { get; set; }
 
         public DateTime CreatedDate { get; set; }

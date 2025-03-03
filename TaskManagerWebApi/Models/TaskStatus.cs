@@ -1,7 +1,7 @@
 ﻿namespace TaskManagerWebApi.Models
 {
     
-        public enum TaskStatus
+        public enum TaskStatuses
         {
             ToDo,
             InProgress,

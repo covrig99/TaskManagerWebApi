@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using TaskManagerWebApi.Controllers.ControllerHelper;
+using System.ComponentModel.DataAnnotations;
+using TaskManagerWebApi.AuthorizationPolicy;
 
 namespace TaskManagerWebApi.Controllers
 {
@@ -28,14 +30,20 @@ namespace TaskManagerWebApi.Controllers
         public async Task<IActionResult> GetAll()
         {
             var result = await taskService.GetAllTasks();
+            var tasksGetRequest = result.Select(async car =>
+            {
+                var taskGet = mapper.Map<TaskGetRequest>(car);
+                return taskGet;
+            });
+            var carsGet = await Task.WhenAll(tasksGetRequest);
             return Ok(result);
         }
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody][Required] TaskAddRequest taskaddRequest)
         {
             var addedTask = mapper.Map<UserTask>(taskaddRequest);
-            User user = new User();
-            var task = await taskService.CreateTask(addedTask, user);
+            addedTask.IdUser = taskaddRequest.UserId;
+            var task = await taskService.CreateTask(addedTask, new User());
             if(task.IsSuccess)
             {
                 return Ok(task.Value);
@@ -45,11 +53,12 @@ namespace TaskManagerWebApi.Controllers
                 return ProcessError(task.Errors);
             }
         }
+        [Authorize(AuthorizationPoilicyConstants.MANAGER_POLICY)]
         [HttpPut]
-        public async Task<IActionResult> UpdateTask([FromBody][Required] TaskUpdateRequest taskUpdateRequest)
+        public async Task<IActionResult> AssigneTaskbyManager([FromBody][Required] TaskUpdataRequest taskUpdateRequest)
         {
             var updatedTaskMapped = mapper.Map<UserTask>(taskUpdateRequest);
-            User user = new User();
+            updatedTaskMapped.IdUser = taskUpdateRequest.UserId;
             var task = await taskService.UpdateTask(updatedTaskMapped);
             
             if (task.IsSuccess)

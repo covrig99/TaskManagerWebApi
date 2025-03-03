@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity;
 using TaskManagerWebApi.Models;
 
 namespace TaskManagerWebApi.DataAccessLayer
@@ -12,7 +11,7 @@ namespace TaskManagerWebApi.DataAccessLayer
 
     {
 
-        public TaskManageDbContext(DbContextOptions <TaskManageDbContext>options) : base(options)
+        public TaskManageDbContext(DbContextOptions<TaskManageDbContext> options) : base(options)
         {
 
         }
@@ -37,6 +36,9 @@ namespace TaskManagerWebApi.DataAccessLayer
             modelBuilder.Entity<User>()
               .HasIndex(e => e.Email)
               .IsUnique();
+            modelBuilder.Entity<User>()
+               .Property(u => u.Id)
+               .ValueGeneratedOnAdd();
 
         }
     }

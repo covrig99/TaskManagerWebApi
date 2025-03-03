@@ -11,13 +11,21 @@ namespace TaskManagerWebApi.AutoMapper
         public MappingProfiles()
         {
             CreateMap<TaskGetRequest,UserTask >();
+            CreateMap<UserTask, TaskGetRequest>();
             CreateMap<TaskAddRequest, UserTask>();
-            CreateMap<TaskUpdateRequest, UserTask>();
-            CreateMap<UserLoginInfoRequest, UserLoginInfo>();
+            CreateMap<TaskUpdataRequest, UserTask>();
+            CreateMap<UserLoginInfoRequest, User>();
+            CreateMap<UserAddRequest, User>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email)) // Ensure UserName is set
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
+            CreateMap<UserLoginInfoRequest, UserDto>();
+            CreateMap<User, UserAddRequest>();
             CreateMap<UserLoginInfo, UserAuthenticated>();
             CreateMap<AccountDeleteRequest, UserLoginInfoRequest>();
-            CreateMap<PasswordUpdateRequest, UserLoginInfoRequest>();
-
+            CreateMap<PasswordUpdateRequest, UserDto>()
+            .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password));
+            CreateMap<User, UserAuthenticated>();
         }
 
     }

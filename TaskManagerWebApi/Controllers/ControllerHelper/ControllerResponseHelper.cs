@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TaskManagerWebApi.Models;
 using TaskManagerWebApi.Models.Errors;
+using TaskManagerWebApi.Models.UserRoles;
 
 namespace TaskManagerWebApi.Controllers.ControllerHelper
 {
@@ -27,6 +28,10 @@ namespace TaskManagerWebApi.Controllers.ControllerHelper
             }
             return StatusCode(problemDetails.Status.Value, problemDetails);
         }
-
+        protected static void ChangeResponsePassword(User userLoginInfo)
+        {
+            if(userLoginInfo == null || userLoginInfo.PasswordHash == null) return;
+            userLoginInfo.PasswordHash = UserContatnts.DEFAULT_STRING;
+        }
     }
 }

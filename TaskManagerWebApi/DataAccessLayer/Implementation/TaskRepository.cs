@@ -29,7 +29,9 @@ namespace TaskManagerWebApi.DataAccessLayer.Implementation
 
         public async Task<List<UserTask>> GetAllTasks()
         {
-            return await context.Tasks.OrderBy(c => c.IdUser).ToListAsync();
+            return await context.Tasks
+        .Include(t => t.User) 
+        .ToListAsync();
         }
 
         public async Task<List<UserTask>> GetAllTasks(int userId)
@@ -40,7 +42,9 @@ namespace TaskManagerWebApi.DataAccessLayer.Implementation
 
         public async Task<UserTask> GetTask(int taskId)
         {
-            return await context.Tasks.FindAsync(taskId);
+            return await context.Tasks
+            .Include(t => t.User)
+            .FirstOrDefaultAsync(t => t.Id == taskId);
         }
 
         public async Task<UserTask> UpdateTask(UserTask task)

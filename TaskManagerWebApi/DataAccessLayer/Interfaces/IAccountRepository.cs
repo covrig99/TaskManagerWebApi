@@ -1,4 +1,5 @@
-﻿using TaskManagerWebApi.Models;
+﻿using Microsoft.AspNetCore.Identity;
+using TaskManagerWebApi.Models;
 
 namespace TaskManagerWebApi.DataAccessLayer.Interfaces
 {
@@ -8,9 +9,11 @@ namespace TaskManagerWebApi.DataAccessLayer.Interfaces
         
         Task<User> UpdateAccount(User users);
         Task<User> DeleteAccount(User users);
-        Task<List<User>> GetAllUsers(User users);
-        Task<User> GetUser(int userId);
-        
-        
+        Task<List<User>> GetAllUsers();
+        Task<User> GetUser(int? userId);
+        Task<List<User>> GetUsers();
+        Task<User> FindByEmail(string email);
+
+
     }
 }

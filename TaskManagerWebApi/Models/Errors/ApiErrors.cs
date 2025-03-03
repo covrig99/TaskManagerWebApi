@@ -18,5 +18,7 @@ namespace TaskManagerWebApi.Models.Errors
         public static ApiErrors NotEnoughRights { get { return new ApiErrors("NotEnoughRights", StatusCodes.Status403Forbidden); } }
         public static ApiErrors WrongPassword { get { return new ApiErrors("WrongPassword", StatusCodes.Status401Unauthorized); } }
         public static ApiErrors InvalidEmail { get { return new ApiErrors("InvalidEmail", StatusCodes.Status404NotFound); } }
+        public static ApiErrors InvalidRole { get { return new ApiErrors("InvalidRole", StatusCodes.Status404NotFound); } }
+        public static ApiErrors UserNotFound { get { return new ApiErrors("UserNotFound", StatusCodes.Status404NotFound); } }
     }
 }
