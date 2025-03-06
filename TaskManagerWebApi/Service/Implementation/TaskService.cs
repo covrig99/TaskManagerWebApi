@@ -22,7 +22,7 @@ namespace TaskManagerWebApi.Service.Implementation
             _userManager = userManager;
         }
 
-        public async Task AssignTaskToUser(int taskId, int userId)
+        public async Task<Result<UserTask>> AssignTaskToUser(int taskId, int userId)
         {
 
             var task = await _taskRepository.GetTask(taskId);
@@ -33,6 +33,7 @@ namespace TaskManagerWebApi.Service.Implementation
 
             task.IdUser = userId;
             await _taskRepository.UpdateTask(task);
+            return Result.Ok(task);
         }
 
         public async Task<Result<UserTask>> CreateTask(UserTask addedTask, User userLoginInfo)
