@@ -25,7 +25,7 @@ namespace TaskManagerWebApi.Controllers
             this.mapper = mapper;
         }
         [HttpPost]
-        public async Task<IActionResult> LoginAdmin([FromBody] UserLoginInfoRequest userLoginInfoRequest)
+        public async Task<IActionResult> Login([FromBody] UserLoginInfoRequest userLoginInfoRequest)
         {
             try
             {
