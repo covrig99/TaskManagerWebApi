@@ -32,6 +32,7 @@ namespace TaskManagerWebApi.Service.Implementation
             if (user == null || user.Role != "User") throw new Exception("Invalid user");
 
             task.IdUser = userId;
+            task.UpdatedDate = DateTime.UtcNow;
             await _taskRepository.UpdateTask(task);
             return Result.Ok(task);
         }
