@@ -52,11 +52,11 @@ namespace TaskManagerWebApi.Controllers
         }
         
         [HttpPut]
-        
-        public async Task<IActionResult> UpdateTask([FromBody][Required] TaskUpdataRequest taskUpdateRequest)
+        [Authorize(AuthorizationPoilicyConstants.MANAGER_POLICY)]
+        public async Task<IActionResult> UpdateTaskForManager([FromBody][Required] TaskUpdateRequest taskUpdateRequest)
         {
             var updatedTaskMapped = mapper.Map<UserTask>(taskUpdateRequest);
-            updatedTaskMapped.IdUser = taskUpdateRequest.UserId;
+            //updatedTaskMapped.IdUser = taskUpdateRequest.UserId;
             var task = await taskService.UpdateTask(updatedTaskMapped);
 
             if (task.IsSuccess)
