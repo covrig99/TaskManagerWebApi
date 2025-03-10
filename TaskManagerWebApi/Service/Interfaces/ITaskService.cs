@@ -12,5 +12,6 @@ namespace TaskManagerWebApi.Service.Interfaces
         public Task<Result<UserTask>> DeleteTask(int task);
 
         public Task AssignTaskToUser(int taskId, int userId);
+        public Task<Result<UserTask>> UpdateTaskStatus(int taskId, TaskStatuses newStatus, string? rejectionReason, int userId);
     }
 }

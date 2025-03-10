@@ -89,12 +89,52 @@ namespace TaskManagerWebApi.Service.Implementation
                 {
                     return Result.Fail(ApiErrors.UserNotFound);
                 }
-                taskfound.IdUser = updateTask.IdUser; // Assign the correct UserId
-                taskfound.User = user; // Ensure navigation property is populated
+                taskfound.IdUser = updateTask.IdUser; 
+                taskfound.User = user; 
             }
 
             await _taskRepository.UpdateTask(taskfound);
             return Result.Ok(taskfound);
+        }
+        public async Task<Result<UserTask>> UpdateTaskStatus(int taskId, TaskStatuses newStatus, string? rejectionReason, int userId)
+        {
+            var task = await _taskRepository.GetTask(taskId);
+            if (task == null)
+                return Result.Fail<UserTask>("Task not found");
+
+            
+            if (task.IdUser != userId)
+                return Result.Fail<UserTask>("You are not authorized to update this task");
+
+            
+            if (task.Status == TaskStatuses.ToDo)
+            {
+                if (newStatus == TaskStatuses.Done || newStatus == TaskStatuses.Approved)
+                    return Result.Fail<UserTask>("You cannot move a task directly from 'To Do' to 'Done' or 'Approved'");
+
+                if (newStatus == TaskStatuses.InProgress)
+                {
+                    task.Status = newStatus;
+                }
+            }
+            else if (newStatus == TaskStatuses.Rejected)
+            {
+                if (string.IsNullOrWhiteSpace(rejectionReason))
+                    return Result.Fail<UserTask>("Rejection reason is required when rejecting a task");
+
+                task.Status = TaskStatuses.Rejected;
+                task.RejectionReason = rejectionReason;
+            }
+            else
+            {
+                
+                task.Status = newStatus;
+            }
+
+            task.UpdatedDate = DateTime.UtcNow;
+            await _taskRepository.UpdateTask(task);
+
+            return Result.Ok(task);
         }
     }
 }

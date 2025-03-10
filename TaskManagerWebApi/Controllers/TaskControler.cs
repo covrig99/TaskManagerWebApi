@@ -71,6 +71,16 @@ namespace TaskManagerWebApi.Controllers
             }
 
         }
+        [HttpPatch("{taskId}")]
+        public async Task<IActionResult> UpdateTaskStatus(int taskId, [FromBody] UpdateTaskStatusRequest request)
+        {
+            var result = await taskService.UpdateTaskStatus(taskId, request.Status, request.RejectionReason, request.UserId);
+
+            if (result.IsSuccess)
+                return Ok(result.Value);
+
+            return BadRequest(result.Errors);
+        }
         [HttpDelete]
         public async Task<IActionResult> DeleteTask(int taskId)
         {
