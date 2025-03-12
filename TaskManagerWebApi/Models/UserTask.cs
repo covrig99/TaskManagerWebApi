@@ -17,8 +17,8 @@ namespace TaskManagerWebApi.Models
 
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
-        public int? IdUser { get; set; }
-        public User? User { get; set; }
+        public int IdUser { get; set; }
+        public User User { get; set; }
 
     }
 }

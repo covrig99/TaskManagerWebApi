@@ -22,7 +22,7 @@ namespace TaskManagerWebApi.Service.Implementation
             _userManager = userManager;
         }
 
-        public async Task AssignTaskToUser(int taskId, int userId)
+        public async Task<Result<UserTask>> AssignTaskToUser(int taskId, int userId)
         {
 
             var task = await _taskRepository.GetTask(taskId);
@@ -32,7 +32,9 @@ namespace TaskManagerWebApi.Service.Implementation
             if (user == null || user.Role != "User") throw new Exception("Invalid user");
 
             task.IdUser = userId;
+            task.UpdatedDate = DateTime.UtcNow;
             await _taskRepository.UpdateTask(task);
+            return Result.Ok(task);
         }
 
         public async Task<Result<UserTask>> CreateTask(UserTask addedTask, User userLoginInfo)
