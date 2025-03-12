@@ -41,14 +41,11 @@ namespace TaskManagerWebApi.Controllers
             var addedTask = mapper.Map<UserTask>(taskaddRequest);
             addedTask.IdUser = taskaddRequest.UserId;
             var task = await taskService.CreateTask(addedTask, new User());
-            if (task.IsSuccess)
-            {
-                return Ok(task.Value);
-            }
-            else
+            if (task.IsFailed)
             {
                 return ProcessError(task.Errors);
             }
+            return Ok(task.Value);
         }
         
         [HttpPut]
@@ -59,14 +56,11 @@ namespace TaskManagerWebApi.Controllers
             //updatedTaskMapped.IdUser = taskUpdateRequest.UserId;
             var task = await taskService.UpdateTask(updatedTaskMapped);
 
-            if (task.IsSuccess)
-            {
-                return Ok(task.Value);
-            }
-            else
+            if (task.IsFailed)
             {
                 return ProcessError(task.Errors);
             }
+            return Ok(task.Value);
 
         }
         [HttpPatch("{taskId}")]
@@ -87,14 +81,11 @@ namespace TaskManagerWebApi.Controllers
         public async Task<IActionResult> DeleteTask(int taskId)
         {
             var task = await taskService.DeleteTask(taskId);
-            if (task.IsSuccess)
-            {
-                return Ok(task.Value);
-            }
-            else
+            if (task.IsFailed)
             {
                 return ProcessError(task.Errors);
             }
+            return Ok(task.Value);
         }
 
 

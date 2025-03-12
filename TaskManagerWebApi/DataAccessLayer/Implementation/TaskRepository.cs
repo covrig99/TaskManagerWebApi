@@ -43,7 +43,7 @@ namespace TaskManagerWebApi.DataAccessLayer.Implementation
         public async Task<UserTask> GetTask(int taskId)
         {
             return await context.Tasks
-                .FirstAsync(t => t.Id == taskId);
+                .FindAsync(taskId);
 
 
         }
