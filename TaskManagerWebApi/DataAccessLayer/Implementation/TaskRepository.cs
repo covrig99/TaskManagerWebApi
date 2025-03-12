@@ -43,8 +43,9 @@ namespace TaskManagerWebApi.DataAccessLayer.Implementation
         public async Task<UserTask> GetTask(int taskId)
         {
             return await context.Tasks
-            .Include(t => t.User)
-            .FirstOrDefaultAsync(t => t.Id == taskId);
+                .FindAsync(taskId);
+
+
         }
 
         public async Task<UserTask> UpdateTask(UserTask task)

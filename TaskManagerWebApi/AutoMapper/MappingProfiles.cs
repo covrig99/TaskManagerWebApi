@@ -13,7 +13,7 @@ namespace TaskManagerWebApi.AutoMapper
             CreateMap<TaskGetRequest,UserTask >();
             CreateMap<UserTask, TaskGetRequest>();
             CreateMap<TaskAddRequest, UserTask>();
-            CreateMap<TaskUpdataRequest, UserTask>();
+            CreateMap<TaskUpdateRequest, UserTask>();
             CreateMap<UserLoginInfoRequest, User>();
             CreateMap<UserAddRequest, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email)) // Ensure UserName is set
@@ -26,7 +26,7 @@ namespace TaskManagerWebApi.AutoMapper
             CreateMap<PasswordUpdateRequest, UserDto>()
             .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password));
             CreateMap<User, UserAuthenticated>();
-            CreateMap<UserTask, UpdateTaskStatusRequest>();
+            CreateMap<AssignTaskByManagerRequest,UserTask>();
         }
 
     }
