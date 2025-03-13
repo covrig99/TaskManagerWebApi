@@ -43,7 +43,7 @@ namespace TaskManagerWebApi.DataAccessLayer.Implementation
         {
             return await context.Users.FindAsync(userId);
         }
-
+        
         public Task<List<User>> GetUsers()
         {
             throw new NotImplementedException();

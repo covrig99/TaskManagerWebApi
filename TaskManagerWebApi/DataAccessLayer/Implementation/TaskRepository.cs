@@ -30,7 +30,7 @@ namespace TaskManagerWebApi.DataAccessLayer.Implementation
         public async Task<List<UserTask>> GetAllTasks()
         {
             return await context.Tasks
-        .Include(t => t.User) 
+        .Include(t => t.IdUser) 
         .ToListAsync();
         }
 

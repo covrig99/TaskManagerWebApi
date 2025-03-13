@@ -6,6 +6,6 @@ namespace TaskManagerWebApi.DTO_s.TaskDTO_s
     {
         public TaskStatuses Status { get; set; }
         public string? RejectionReason { get; set; }
-        public int UserId { get; set; }
+       
     }
 }

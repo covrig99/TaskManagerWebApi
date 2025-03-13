@@ -64,7 +64,19 @@ namespace TaskManagerWebApi.Controllers
 
         }
         [HttpPatch("{taskId}")]
+
+        public async Task<IActionResult> UpdateTaskStatus(int taskId, [FromBody] UpdateTaskStatusRequest request)
+        {
+            var result = await taskService.UpdateTaskStatus(taskId, request.Status, request.RejectionReason);
+
+            if (result.IsSuccess)
+                return Ok(result.Value);
+
+            return BadRequest(result.Errors);
+        }
+
         [Authorize(AuthorizationPoilicyConstants.MANAGER_POLICY)]
+        [HttpPatch("{taskId}")]
         public async Task<IActionResult> AssigneTaskToUser([FromRoute] int taskId, [FromBody] AssignTaskByManagerRequest assigneTaskByManager)
         {
             var updatedTaskMapped = mapper.Map<UserTask>(assigneTaskByManager);
@@ -76,6 +88,7 @@ namespace TaskManagerWebApi.Controllers
                 return ProcessError(task.Errors);
             }
             return Ok(task.Value);
+
         }
         [HttpDelete]
         public async Task<IActionResult> DeleteTask(int taskId)

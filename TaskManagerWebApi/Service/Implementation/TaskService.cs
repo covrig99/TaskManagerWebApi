@@ -98,15 +98,14 @@ namespace TaskManagerWebApi.Service.Implementation
             await _taskRepository.UpdateTask(taskfound);
             return Result.Ok(taskfound);
         }
-        public async Task<Result<UserTask>> UpdateTaskStatus(int taskId, TaskStatuses newStatus, string? rejectionReason, int userId)
+        public async Task<Result<UserTask>> UpdateTaskStatus(int taskId, TaskStatuses newStatus, string? rejectionReason)
         {
             var task = await _taskRepository.GetTask(taskId);
             if (task == null)
                 return Result.Fail<UserTask>("Task not found");
 
             
-            if (task.IdUser != userId)
-                return Result.Fail<UserTask>("You are not authorized to update this task");
+            
 
             
             if (task.Status == TaskStatuses.ToDo)

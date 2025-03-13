@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskManagerWebApi.DataAccessLayer;
 
@@ -11,9 +12,11 @@ using TaskManagerWebApi.DataAccessLayer;
 namespace TaskManagerWebApi.Migrations
 {
     [DbContext(typeof(TaskManageDbContext))]
-    partial class TaskManageDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250312202933_ebati")]
+    partial class ebati
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

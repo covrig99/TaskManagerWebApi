@@ -26,7 +26,10 @@ namespace TaskManagerWebApi.AutoMapper
             CreateMap<PasswordUpdateRequest, UserDto>()
             .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password));
             CreateMap<User, UserAuthenticated>();
+            CreateMap<UserTask, UpdateTaskStatusRequest>();
+
             CreateMap<AssignTaskByManagerRequest,UserTask>();
+
         }
 
     }
