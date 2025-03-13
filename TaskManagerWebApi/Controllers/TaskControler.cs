@@ -24,16 +24,33 @@ namespace TaskManagerWebApi.Controllers
             this.mapper = mapper;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int? managerId,
+            [FromQuery] int? userId,
+            [FromQuery] DateTime? createdDate,
+            [FromQuery] TaskStatuses? status,
+            [FromQuery] string sortBy = "createdDate",
+            [FromQuery] bool isDescending = false,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
-            var result = await taskService.GetAllTasks();
-            var tasksGetRequest = result.Select(async car =>
+            if (page < 1 || pageSize < 1)
+                return BadRequest("Page and PageSize must be greater than 0.");
+
+            var result = await taskService.GetAllTasks(managerId, userId, createdDate, status, sortBy, isDescending, page, pageSize);
+
+            var tasksGet = result.Items.Select(task => mapper.Map<TaskGetRequest>(task)).ToList();
+
+            var response = new
             {
-                var taskGet = mapper.Map<TaskGetRequest>(car);
-                return taskGet;
-            });
-            var carsGet = await Task.WhenAll(tasksGetRequest);
-            return Ok(result);
+                TotalCount = result.TotalCount,
+                Page = result.Page,
+                PageSize = result.PageSize,
+                Tasks = tasksGet
+            };
+
+            return Ok(response);
         }
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody][Required] TaskAddRequest taskaddRequest)
@@ -47,7 +64,7 @@ namespace TaskManagerWebApi.Controllers
             }
             return Ok(task.Value);
         }
-        
+
         [HttpPut]
         [Authorize(AuthorizationPoilicyConstants.MANAGER_POLICY)]
         public async Task<IActionResult> UpdateTaskForManager([FromBody][Required] TaskUpdateRequest taskUpdateRequest)

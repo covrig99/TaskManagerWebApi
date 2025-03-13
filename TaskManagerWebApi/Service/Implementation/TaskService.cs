@@ -5,6 +5,7 @@ using TaskManagerWebApi.DataAccessLayer.Implementation;
 using TaskManagerWebApi.DataAccessLayer.Interfaces;
 using TaskManagerWebApi.Models;
 using TaskManagerWebApi.Models.Errors;
+using TaskManagerWebApi.Models.NewFolder;
 using TaskManagerWebApi.Service.Interfaces;
 
 namespace TaskManagerWebApi.Service.Implementation
@@ -61,15 +62,19 @@ namespace TaskManagerWebApi.Service.Implementation
                 return addedTask;
         }
 
-        public async Task<List<UserTask>> GetAllTasks()
+        public async Task<PagedResult<UserTask>> GetAllTasks(
+            int? managerId, int? userId, DateTime? createdDate, TaskStatuses? status,
+            string sortBy = "createdDate", bool isDescending = false, int page = 1, int pageSize = 10)
         {
-            var tasks = await _taskRepository.GetAllTasks();
-            foreach (var task in tasks)
+            var tasksPagedResult = await _taskRepository.GetAllTasks(managerId, userId, createdDate, status, sortBy, isDescending, page, pageSize);
+
+            foreach (var task in tasksPagedResult.Items)
             {
                 task.RejectionReason ??= "N/A";
                 task.User ??= new User { Id = 0, Email = "Unassigned", UserName = "No User" };
             }
-            return tasks;
+
+            return tasksPagedResult;
         }
 
         public async Task<Result<UserTask>> UpdateTask(UserTask updateTask)

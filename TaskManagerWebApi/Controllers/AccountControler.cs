@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using TaskManagerWebApi.AuthorizationPolicy;
 using TaskManagerWebApi.Controllers.ControllerHelper;
@@ -44,7 +45,7 @@ namespace TaskManagerWebApi.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(AuthorizationPoilicyConstants.ADMIN_POLICY)]
         public async Task<IActionResult> CreateUser([FromBody] UserAddRequest userAddRequest)
         {
             var addedUser = mapper.Map<User>(userAddRequest);
@@ -60,6 +61,30 @@ namespace TaskManagerWebApi.Controllers
             return Ok(account.Value);
         }
 
+        [HttpPut("{userId}")]
+        [Authorize(AuthorizationPoilicyConstants.ADMIN_POLICY)]
+
+        public async Task<IActionResult> UpdateUser(int userId, [FromBody] UserUpdateRequest updatedUserRequest)
+        {
+            try
+            {
+                
+                var userEntity = mapper.Map<User>(updatedUserRequest);
+
+                var result = await accountService.UpdateUser(userId, userEntity, updatedUserRequest.NewPassword);
+
+                if (!result.IsSuccess)
+                {
+                    return BadRequest(result.Errors);
+                }
+
+                return Ok("User updated successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
         [HttpPatch]
         [Authorize(AuthorizationPoilicyConstants.MANAGER_OR_USER_POLICY)]
 
@@ -81,25 +106,53 @@ namespace TaskManagerWebApi.Controllers
             }
         }
         [HttpGet]
-        [Authorize(AuthorizationPoilicyConstants.MANAGER_POLICY)]
-        public async Task<IActionResult> GetAllUsers()
+        [Authorize(AuthorizationPoilicyConstants.MANAGER_OR_ADMIN_POLICY)]
+        public async Task<IActionResult> GetAllUsers([FromQuery] string? role, [FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var users = await accountService.GetAllUsers();
-            if (users.Count == 0)
+            if (page < 1 || pageSize < 1)
+                return BadRequest("Page and PageSize must be greater than 0.");
+
+            var usersQuery = accountService.GetAllUsersQueryable(); 
+
+            
+            if (!string.IsNullOrWhiteSpace(role))
             {
-                ModelState.AddModelError("", "Something went wrong when getting users");
-                return StatusCode(500, ModelState);
+                usersQuery = usersQuery.Where(u => u.Role == role);
             }
 
-            var userGetRequest = users.Select(async user =>
+            
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                var userGet = mapper.Map<UserAuthenticated>(user);
-                return userGet;
-            });
-            var usersGet = await Task.WhenAll(userGetRequest);
-            return Ok(usersGet);
-        }
+                usersQuery = usersQuery.Where(u => u.Email.Contains(search) || u.UserName.Contains(search));
+            }
 
+            
+            int totalUsers = await usersQuery.CountAsync();
+
+            
+            var users = await usersQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            if (!users.Any())
+            {
+                return NotFound("No users found.");
+            }
+
+            var usersGet = users.Select(user => mapper.Map<UserAuthenticated>(user)).ToList();
+
+           
+            var response = new
+            {
+                TotalCount = totalUsers,
+                Page = page,
+                PageSize = pageSize,
+                Users = usersGet
+            };
+
+            return Ok(response);
+        }
 
 
 

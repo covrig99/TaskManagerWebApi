@@ -30,7 +30,10 @@ namespace TaskManagerWebApi.Service.Implementation
             _taskRepository = taskRepository;
             this.config = config;
         }
-
+        public IQueryable<User> GetAllUsersQueryable()
+        {
+            return _accountRepository.GetAllUsersQueryable();
+        }
         private async Task EnsureRolesExist()
         {
             string[] roles = { "Admin", "Manager", "User" };
@@ -103,12 +106,12 @@ namespace TaskManagerWebApi.Service.Implementation
                 return Result.Fail(ApiErrors.InvalidEmail);
             }
 
-            var succes =  await _userManager.CheckPasswordAsync(userLoginInfoFind, userLoginInfoRequest.Password);
-            
+            var succes = await _userManager.CheckPasswordAsync(userLoginInfoFind, userLoginInfoRequest.Password);
 
-            if (!succes )
+
+            if (!succes)
             {
-                return Result.Fail(ApiErrors.WrongPassword); 
+                return Result.Fail(ApiErrors.WrongPassword);
             }
             string role = userLoginInfoFind.Role;
             if (role == null)
@@ -123,9 +126,9 @@ namespace TaskManagerWebApi.Service.Implementation
             new Claim(ClaimTypes.Role, role)
             };
 
-            
-            
-            
+
+
+
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -139,9 +142,29 @@ namespace TaskManagerWebApi.Service.Implementation
 
         }
 
-        public Task<User> UpdateAccount(User users)
+        public async Task<Result<User>> UpdateUser(int userId, User updatedUser, string? newPassword)
         {
-            throw new NotImplementedException();
+            var user = await _accountRepository.GetUser(userId);
+            if (user == null)
+                return Result.Fail("User not found");
+            
+
+            if (string.IsNullOrWhiteSpace(updatedUser.Role))
+                return Result.Fail("Role cannot be empty");
+            user.Email = updatedUser.Email;
+            user.Role = updatedUser.Role;
+            user.UserName = updatedUser.UserName;
+            user.UserName = user.Email;
+
+            if (!string.IsNullOrWhiteSpace(newPassword))
+            {
+                var passwordHasher = new PasswordHasher<User>();
+                user.PasswordHash = passwordHasher.HashPassword(user, newPassword);
+            }
+
+            await _accountRepository.UpdateAccount(user);
+
+            return Result.Ok(user);
         }
 
         public async Task<Result<User>> UpdatePassword(UserDto userLoginInfoRequest, string newPassword)

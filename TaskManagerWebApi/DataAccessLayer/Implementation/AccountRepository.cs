@@ -39,6 +39,11 @@ namespace TaskManagerWebApi.DataAccessLayer.Implementation
             return await context.Users.OrderBy(c => c.Id).ToListAsync();
         }
 
+        public IQueryable<User> GetAllUsersQueryable()
+        {
+            return context.Users.AsQueryable();
+        }
+
         public async Task<User> GetUser(int? userId)
         {
             return await context.Users.FindAsync(userId);
