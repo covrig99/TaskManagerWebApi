@@ -84,10 +84,15 @@ namespace TaskManagerWebApi.Controllers
 
         public async Task<IActionResult> UpdateTaskStatus(int taskId, [FromBody] UpdateTaskStatusRequest request)
         {
-            var result = await taskService.UpdateTaskStatus(taskId, request.Status, request.RejectionReason);
+            if (!Enum.TryParse<TaskStatuses>(request.Status, true, out var statusEnum))
+            {
+                return BadRequest("Invalid task status.");
+            }
+
+            var result = await taskService.UpdateTaskStatus(taskId, statusEnum, request.RejectionReason);
 
             if (result.IsSuccess)
-                return Ok(result.Value);
+                return Ok(new { message = "Status has been updated successfully." });
 
             return BadRequest(result.Errors);
         }
@@ -115,7 +120,7 @@ namespace TaskManagerWebApi.Controllers
             {
                 return ProcessError(task.Errors);
             }
-            return Ok(task.Value);
+            return Ok(new { message = "Task has been deleted successfully." });
         }
 
 

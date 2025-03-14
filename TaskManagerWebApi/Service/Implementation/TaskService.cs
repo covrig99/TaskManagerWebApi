@@ -110,9 +110,6 @@ namespace TaskManagerWebApi.Service.Implementation
                 return Result.Fail<UserTask>("Task not found");
 
             
-            
-
-            
             if (task.Status == TaskStatuses.ToDo)
             {
                 if (newStatus == TaskStatuses.Done || newStatus == TaskStatuses.Approved)
