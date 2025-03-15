@@ -106,54 +106,29 @@ namespace TaskManagerWebApi.Controllers
             }
         }
         [HttpGet]
-        [Authorize(AuthorizationPoilicyConstants.MANAGER_OR_ADMIN_POLICY)]
-        public async Task<IActionResult> GetAllUsers([FromQuery] string? role, [FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        //[Authorize(AuthorizationPoilicyConstants.MANAGER_OR_ADMIN_POLICY)]
+        public async Task<IActionResult> GetAllUsers([FromQuery] GetAllUsersRequest request)
         {
-            if (page < 1 || pageSize < 1)
-                return BadRequest("Page and PageSize must be greater than 0.");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var usersQuery = accountService.GetAllUsersQueryable(); 
-
-            
-            if (!string.IsNullOrWhiteSpace(role))
-            {
-                usersQuery = usersQuery.Where(u => u.Role == role);
-            }
-
-            
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                usersQuery = usersQuery.Where(u => u.Email.Contains(search) || u.UserName.Contains(search));
-            }
-
-            
-            int totalUsers = await usersQuery.CountAsync();
-
-            
-            var users = await usersQuery
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            var (users, totalUsers) = await accountService.GetAllUsers(request);
 
             if (!users.Any())
-            {
                 return NotFound("No users found.");
-            }
 
             var usersGet = users.Select(user => mapper.Map<UserAuthenticated>(user)).ToList();
 
-           
             var response = new
             {
                 TotalCount = totalUsers,
-                Page = page,
-                PageSize = pageSize,
+                Offset = request.Offset,
+                Limit = request.Limit,
                 Users = usersGet
             };
 
             return Ok(response);
         }
-
 
 
     }

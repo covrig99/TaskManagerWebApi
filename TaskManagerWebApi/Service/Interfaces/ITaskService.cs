@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Microsoft.AspNetCore.Identity;
+using TaskManagerWebApi.DTO_s.TaskDTO_s;
 using TaskManagerWebApi.Models;
 using TaskManagerWebApi.Models.NewFolder;
 
@@ -12,9 +13,7 @@ namespace TaskManagerWebApi.Service.Interfaces
         public Task<Result<UserTask>> UpdateTask(UserTask updateTask);
         public Task<Result<UserTask>> DeleteTask(int task);
 
-        Task<PagedResult<UserTask>> GetAllTasks(
-            int? managerId, int? userId, DateTime? createdDate, TaskStatuses? status,
-            string sortBy = "createdDate", bool isDescending = false, int page = 1, int pageSize = 10);
+        Task<PagedResult<UserTask>> GetAllTasks(TaskGetAllRequest request);
 
 
         public Task<Result<UserTask>> UpdateTaskStatus(int taskId, TaskStatuses newStatus, string? rejectionReason);

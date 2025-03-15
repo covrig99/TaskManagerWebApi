@@ -2,17 +2,17 @@
 {
     public class PagedResult<T>
     {
-        public List<T> Items { get; }
         public int TotalCount { get; }
-        public int Page { get; }
-        public int PageSize { get; }
+        public int Offset { get; }
+        public int Limit { get; }
+        public List<T> Items { get; }
 
-        public PagedResult(List<T> items, int totalCount, int page, int pageSize)
+        public PagedResult(int totalCount, int offset, int limit, List<T> items)
         {
-            Items = items;
             TotalCount = totalCount;
-            Page = page;
-            PageSize = pageSize;
+            Offset = offset;
+            Limit = limit;
+            Items = items;
         }
     }
 }

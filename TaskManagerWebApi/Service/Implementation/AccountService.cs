@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -30,10 +31,10 @@ namespace TaskManagerWebApi.Service.Implementation
             _taskRepository = taskRepository;
             this.config = config;
         }
-        public IQueryable<User> GetAllUsersQueryable()
-        {
-            return _accountRepository.GetAllUsersQueryable();
-        }
+        //public IQueryable<User> GetAllUsersQueryable()
+        //{
+        //    return _accountRepository.GetAllUsersQueryable();
+        //}
         private async Task EnsureRolesExist()
         {
             string[] roles = { "Admin", "Manager", "User" };
@@ -87,10 +88,28 @@ namespace TaskManagerWebApi.Service.Implementation
             return accountFound;
         }
 
-        public async Task<List<User>> GetAllUsers()
+        public async Task<(List<User> Users, int TotalCount)> GetAllUsers(GetAllUsersRequest request)
         {
-            var account = await _accountRepository.GetAllUsers();
-            return account;
+            var usersQuery = _accountRepository.GetAllUsersQueryable();
+
+            if (!string.IsNullOrWhiteSpace(request.Role))
+            {
+                usersQuery = usersQuery.Where(u => u.Role == request.Role);
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                usersQuery = usersQuery.Where(u => u.Email.Contains(request.Search) || u.UserName.Contains(request.Search));
+            }
+
+            int totalUsers = await usersQuery.CountAsync();
+
+            var users = await usersQuery
+                .Skip(request.Offset ?? 0)
+                .Take(request.Limit ?? 10)
+                .ToListAsync();
+
+            return (users, totalUsers);
         }
 
         public Task<User> GetUser(int userId)

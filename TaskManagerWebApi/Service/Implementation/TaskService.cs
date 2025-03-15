@@ -1,8 +1,10 @@
 ﻿using FluentResults;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using TaskManagerWebApi.DataAccessLayer.Implementation;
 using TaskManagerWebApi.DataAccessLayer.Interfaces;
+using TaskManagerWebApi.DTO_s.TaskDTO_s;
 using TaskManagerWebApi.Models;
 using TaskManagerWebApi.Models.Errors;
 using TaskManagerWebApi.Models.NewFolder;
@@ -62,19 +64,37 @@ namespace TaskManagerWebApi.Service.Implementation
                 return addedTask;
         }
 
-        public async Task<PagedResult<UserTask>> GetAllTasks(
-            int? managerId, int? userId, DateTime? createdDate, TaskStatuses? status,
-            string sortBy = "createdDate", bool isDescending = false, int page = 1, int pageSize = 10)
+        public async Task<PagedResult<UserTask>> GetAllTasks(TaskGetAllRequest request)
         {
-            var tasksPagedResult = await _taskRepository.GetAllTasks(managerId, userId, createdDate, status, sortBy, isDescending, page, pageSize);
+            var tasksQuery = _taskRepository.GetAllTasksQueryable();
 
-            foreach (var task in tasksPagedResult.Items)
+            if (request.ManagerId.HasValue)
+                tasksQuery = tasksQuery.Where(t => t.User.Id == request.ManagerId);
+
+            if (request.UserId.HasValue)
+                tasksQuery = tasksQuery.Where(t => t.User.Id == request.UserId);
+
+            if (request.CreatedDate.HasValue)
+                tasksQuery = tasksQuery.Where(t => t.CreatedDate.Date == request.CreatedDate.Value.Date);
+
+            if (request.Status.HasValue)
+                tasksQuery = tasksQuery.Where(t => t.Status == request.Status);
+
+            if (!string.IsNullOrEmpty(request.SortDirection))
             {
-                task.RejectionReason ??= "N/A";
-                task.User ??= new User { Id = 0, Email = "Unassigned", UserName = "No User" };
+                bool isDescending = request.SortDirection == "DESC";
+                tasksQuery = isDescending
+                    ? tasksQuery.OrderByDescending(t => EF.Property<object>(t, request.SortBy))
+                    : tasksQuery.OrderBy(t => EF.Property<object>(t, request.SortBy));
             }
 
-            return tasksPagedResult;
+            int totalTasks = await tasksQuery.CountAsync();
+            var tasks = await tasksQuery
+                .Skip(request.Offset ?? 0)
+                .Take(request.Limit ?? 10)
+                .ToListAsync();
+
+            return new PagedResult<UserTask>(totalTasks, request.Offset ?? 0, request.Limit ?? 10, tasks);
         }
 
         public async Task<Result<UserTask>> UpdateTask(UserTask updateTask)
@@ -107,13 +127,14 @@ namespace TaskManagerWebApi.Service.Implementation
         {
             var task = await _taskRepository.GetTask(taskId);
             if (task == null)
-                return Result.Fail<UserTask>("Task not found");
+                return Result.Fail(ApiErrors.TaskNotFound);
 
-            
+
+
             if (task.Status == TaskStatuses.ToDo)
             {
                 if (newStatus == TaskStatuses.Done || newStatus == TaskStatuses.Approved)
-                    return Result.Fail<UserTask>("You cannot move a task directly from 'To Do' to 'Done' or 'Approved'");
+                    return Result.Fail(ApiErrors.InvalidStatusUpdateError);
 
                 if (newStatus == TaskStatuses.InProgress)
                 {
@@ -123,7 +144,7 @@ namespace TaskManagerWebApi.Service.Implementation
             else if (newStatus == TaskStatuses.Rejected)
             {
                 if (string.IsNullOrWhiteSpace(rejectionReason))
-                    return Result.Fail<UserTask>("Rejection reason is required when rejecting a task");
+                    return Result.Fail(ApiErrors.EmptyMandatoryReason);
 
                 task.Status = TaskStatuses.Rejected;
                 task.RejectionReason = rejectionReason;

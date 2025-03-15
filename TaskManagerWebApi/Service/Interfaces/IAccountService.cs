@@ -13,10 +13,10 @@ namespace TaskManagerWebApi.Service.Interfaces
         
         
         Task<User> DeleteAccount(int user);
-        Task<List<User>> GetAllUsers();
+        Task<(List<User> Users, int TotalCount)> GetAllUsers(GetAllUsersRequest request);
         Task<User> GetUser(int userId);
         Task<Result<User>> UpdateUser(int userId, User updatedUser, string? newPassword);
         Task<Result<User>> UpdatePassword(UserDto userLoginInfo, string newPassword);
-        IQueryable<User> GetAllUsersQueryable();
+        //IQueryable<User> GetAllUsersQueryable();
     }
 }

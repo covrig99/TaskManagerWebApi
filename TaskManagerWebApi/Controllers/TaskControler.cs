@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Azure.Core;
+using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -7,6 +9,7 @@ using TaskManagerWebApi.Controllers.ControllerHelper;
 using TaskManagerWebApi.DTO_s.TaskDTO_s;
 using TaskManagerWebApi.Models;
 using TaskManagerWebApi.Service.Interfaces;
+using TaskManagerWebApi.Models.NewFolder;
 
 namespace TaskManagerWebApi.Controllers
 {
@@ -25,33 +28,27 @@ namespace TaskManagerWebApi.Controllers
         }
         [HttpGet]
 
-        public async Task<IActionResult> GetAll(
-            [FromQuery] int? managerId,
-            [FromQuery] int? userId,
-            [FromQuery] DateTime? createdDate,
-            [FromQuery] TaskStatuses? status,
-            [FromQuery] string sortBy = "createdDate",
-            [FromQuery] bool isDescending = false,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAll([FromQuery] TaskGetAllRequest request)
         {
-            if (page < 1 || pageSize < 1)
-                return BadRequest("Page and PageSize must be greater than 0.");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var result = await taskService.GetAllTasks(managerId, userId, createdDate, status, sortBy, isDescending, page, pageSize);
+            var result = await taskService.GetAllTasks(request);
 
             var tasksGet = result.Items.Select(task => mapper.Map<TaskGetRequest>(task)).ToList();
 
-            var response = new
-            {
-                TotalCount = result.TotalCount,
-                Page = result.Page,
-                PageSize = result.PageSize,
-                Tasks = tasksGet
-            };
+            var response = new PagedResult<TaskGetRequest>(
+            result.TotalCount,
+            request.Offset ?? 0,
+                request.Limit ?? 10,
+                tasksGet
+            );
 
             return Ok(response);
+            
         }
+          
+        
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody][Required] TaskAddRequest taskaddRequest)
         {

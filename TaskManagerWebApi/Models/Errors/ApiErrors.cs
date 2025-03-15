@@ -20,5 +20,8 @@ namespace TaskManagerWebApi.Models.Errors
         public static ApiErrors InvalidEmail { get { return new ApiErrors("InvalidEmail", StatusCodes.Status404NotFound); } }
         public static ApiErrors InvalidRole { get { return new ApiErrors("InvalidRole", StatusCodes.Status404NotFound); } }
         public static ApiErrors UserNotFound { get { return new ApiErrors("UserNotFound", StatusCodes.Status404NotFound); } }
+        public static ApiErrors InvalidStatusUpdateError { get { return new ApiErrors("InvalidStatusUpdateError", StatusCodes.Status403Forbidden); } }
+        public static ApiErrors TaskNotFound { get { return new ApiErrors("TaskNotFound", StatusCodes.Status404NotFound); } }
+        public static ApiErrors EmptyMandatoryReason { get { return new ApiErrors("Rejection Reason is mandatory", StatusCodes.Status404NotFound); } }
     }
 }
