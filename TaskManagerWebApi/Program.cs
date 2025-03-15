@@ -67,6 +67,10 @@ builder.Services.AddAuthorization(options =>
         .RequireClaim("role", UserContatnts.MANAGER_ROLE));
     options.AddPolicy(AuthorizationPoilicyConstants.MANAGER_POLICY, policy =>
        policy.RequireRole(UserContatnts.MANAGER_ROLE));
+    options.AddPolicy(AuthorizationPoilicyConstants.ADMIN_POLICY, policy =>
+       policy.RequireRole(UserContatnts.ADMIN_ROLE));
+    options.AddPolicy(AuthorizationPoilicyConstants.MANAGER_OR_ADMIN_POLICY, policy =>
+       policy.RequireRole(UserContatnts.ADMIN_ROLE,UserContatnts.MANAGER_ROLE));
 
 
 

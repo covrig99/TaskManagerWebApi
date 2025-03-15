@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using TaskManagerWebApi.AuthorizationPolicy;
 using TaskManagerWebApi.Controllers.ControllerHelper;
@@ -44,7 +45,7 @@ namespace TaskManagerWebApi.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(AuthorizationPoilicyConstants.ADMIN_POLICY)]
         public async Task<IActionResult> CreateUser([FromBody] UserAddRequest userAddRequest)
         {
             var addedUser = mapper.Map<User>(userAddRequest);
@@ -60,6 +61,30 @@ namespace TaskManagerWebApi.Controllers
             return Ok(account.Value);
         }
 
+        [HttpPut("{userId}")]
+        [Authorize(AuthorizationPoilicyConstants.ADMIN_POLICY)]
+
+        public async Task<IActionResult> UpdateUser(int userId, [FromBody] UserUpdateRequest updatedUserRequest)
+        {
+            try
+            {
+                
+                var userEntity = mapper.Map<User>(updatedUserRequest);
+
+                var result = await accountService.UpdateUser(userId, userEntity, updatedUserRequest.NewPassword);
+
+                if (!result.IsSuccess)
+                {
+                    return BadRequest(result.Errors);
+                }
+
+                return Ok("User updated successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
         [HttpPatch]
         [Authorize(AuthorizationPoilicyConstants.MANAGER_OR_USER_POLICY)]
 
@@ -81,26 +106,29 @@ namespace TaskManagerWebApi.Controllers
             }
         }
         [HttpGet]
-        [Authorize(AuthorizationPoilicyConstants.MANAGER_POLICY)]
-        public async Task<IActionResult> GetAllUsers()
+        //[Authorize(AuthorizationPoilicyConstants.MANAGER_OR_ADMIN_POLICY)]
+        public async Task<IActionResult> GetAllUsers([FromQuery] GetAllUsersRequest request)
         {
-            var users = await accountService.GetAllUsers();
-            if (users.Count == 0)
-            {
-                ModelState.AddModelError("", "Something went wrong when getting users");
-                return StatusCode(500, ModelState);
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var userGetRequest = users.Select(async user =>
+            var (users, totalUsers) = await accountService.GetAllUsers(request);
+
+            if (!users.Any())
+                return NotFound("No users found.");
+
+            var usersGet = users.Select(user => mapper.Map<UserAuthenticated>(user)).ToList();
+
+            var response = new
             {
-                var userGet = mapper.Map<UserAuthenticated>(user);
-                return userGet;
-            });
-            var usersGet = await Task.WhenAll(userGetRequest);
-            return Ok(usersGet);
+                TotalCount = totalUsers,
+                Offset = request.Offset,
+                Limit = request.Limit,
+                Users = usersGet
+            };
+
+            return Ok(response);
         }
-
-
 
 
     }

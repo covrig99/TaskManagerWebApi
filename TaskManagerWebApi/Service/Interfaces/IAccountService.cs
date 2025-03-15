@@ -8,14 +8,15 @@ namespace TaskManagerWebApi.Service.Interfaces
 {
     public interface IAccountService
     {
-        public Task<Result<string>> Login(UserDto userLoginInfo);
+        Task<Result<string>> Login(UserDto userLoginInfo);
         Task<Result<User>> CreateAccount(User users, string password);
         
-        Task<User> UpdateAccount(User users);
-        Task<User> DeleteAccount(int user);
-        Task<List<User>> GetAllUsers();
-        Task<User> GetUser(int userId);
         
-        public Task<Result<User>> UpdatePassword(UserDto userLoginInfo, string newPassword);
+        Task<User> DeleteAccount(int user);
+        Task<(List<User> Users, int TotalCount)> GetAllUsers(GetAllUsersRequest request);
+        Task<User> GetUser(int userId);
+        Task<Result<User>> UpdateUser(int userId, User updatedUser, string? newPassword);
+        Task<Result<User>> UpdatePassword(UserDto userLoginInfo, string newPassword);
+        //IQueryable<User> GetAllUsersQueryable();
     }
 }

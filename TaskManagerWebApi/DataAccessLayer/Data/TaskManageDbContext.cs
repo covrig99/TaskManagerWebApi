@@ -39,7 +39,11 @@ namespace TaskManagerWebApi.DataAccessLayer
             modelBuilder.Entity<User>()
                .Property(u => u.Id)
                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<UserTask>()
+               .Property(t => t.Status)
+               .HasConversion<string>();
 
+            
         }
     }
 }

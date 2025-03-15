@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Azure.Core;
+using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -7,6 +9,7 @@ using TaskManagerWebApi.Controllers.ControllerHelper;
 using TaskManagerWebApi.DTO_s.TaskDTO_s;
 using TaskManagerWebApi.Models;
 using TaskManagerWebApi.Service.Interfaces;
+using TaskManagerWebApi.Models.NewFolder;
 
 namespace TaskManagerWebApi.Controllers
 {
@@ -24,17 +27,28 @@ namespace TaskManagerWebApi.Controllers
             this.mapper = mapper;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+
+        public async Task<IActionResult> GetAll([FromQuery] TaskGetAllRequest request)
         {
-            var result = await taskService.GetAllTasks();
-            var tasksGetRequest = result.Select(async car =>
-            {
-                var taskGet = mapper.Map<TaskGetRequest>(car);
-                return taskGet;
-            });
-            var carsGet = await Task.WhenAll(tasksGetRequest);
-            return Ok(result);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await taskService.GetAllTasks(request);
+
+            var tasksGet = result.Items.Select(task => mapper.Map<TaskGetRequest>(task)).ToList();
+
+            var response = new PagedResult<TaskGetRequest>(
+            result.TotalCount,
+            request.Offset ?? 0,
+                request.Limit ?? 10,
+                tasksGet
+            );
+
+            return Ok(response);
+            
         }
+          
+        
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody][Required] TaskAddRequest taskaddRequest)
         {
@@ -47,7 +61,7 @@ namespace TaskManagerWebApi.Controllers
             }
             return Ok(task.Value);
         }
-        
+
         [HttpPut]
         [Authorize(AuthorizationPoilicyConstants.MANAGER_POLICY)]
         public async Task<IActionResult> UpdateTaskForManager([FromBody][Required] TaskUpdateRequest taskUpdateRequest)
@@ -64,7 +78,24 @@ namespace TaskManagerWebApi.Controllers
 
         }
         [HttpPatch("{taskId}")]
+
+        public async Task<IActionResult> UpdateTaskStatus(int taskId, [FromBody] UpdateTaskStatusRequest request)
+        {
+            if (!Enum.TryParse<TaskStatuses>(request.Status, true, out var statusEnum))
+            {
+                return BadRequest("Invalid task status.");
+            }
+
+            var result = await taskService.UpdateTaskStatus(taskId, statusEnum, request.RejectionReason);
+
+            if (result.IsSuccess)
+                return Ok(new { message = "Status has been updated successfully." });
+
+            return BadRequest(result.Errors);
+        }
+
         [Authorize(AuthorizationPoilicyConstants.MANAGER_POLICY)]
+        [HttpPatch("{taskId}")]
         public async Task<IActionResult> AssigneTaskToUser([FromRoute] int taskId, [FromBody] AssignTaskByManagerRequest assigneTaskByManager)
         {
             var updatedTaskMapped = mapper.Map<UserTask>(assigneTaskByManager);
@@ -76,6 +107,7 @@ namespace TaskManagerWebApi.Controllers
                 return ProcessError(task.Errors);
             }
             return Ok(task.Value);
+
         }
         [HttpDelete]
         public async Task<IActionResult> DeleteTask(int taskId)
@@ -85,7 +117,7 @@ namespace TaskManagerWebApi.Controllers
             {
                 return ProcessError(task.Errors);
             }
-            return Ok(task.Value);
+            return Ok(new { message = "Task has been deleted successfully." });
         }
 
 

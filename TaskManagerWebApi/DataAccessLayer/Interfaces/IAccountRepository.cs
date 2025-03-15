@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Linq;
 using TaskManagerWebApi.Models;
 
 namespace TaskManagerWebApi.DataAccessLayer.Interfaces
@@ -13,6 +14,7 @@ namespace TaskManagerWebApi.DataAccessLayer.Interfaces
         Task<User> GetUser(int? userId);
         Task<List<User>> GetUsers();
         Task<User> FindByEmail(string email);
+        IQueryable<User> GetAllUsersQueryable();
 
 
     }
